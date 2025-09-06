@@ -5,33 +5,45 @@ import { produce } from 'immer';
 
 export const useProjectData = () => {
   const [projectData, setProjectData] = useState<ProjectData>({ tasks: [] });
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     try {
       const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+      console.log('Loading from localStorage:', { storedData });
+      
       if (storedData) {
         const parsedData: ProjectData = JSON.parse(storedData);
+        console.log('Parsed data:', parsedData);
+        
         if(parsedData && Array.isArray(parsedData.tasks)) {
+           console.log('Setting project data from localStorage:', parsedData);
            setProjectData(parsedData);
         } else {
+            console.log('Invalid data structure, using SAMPLE_DATA');
             setProjectData(SAMPLE_DATA);
         }
       } else {
+        console.log('No stored data found, using SAMPLE_DATA');
         setProjectData(SAMPLE_DATA);
       }
     } catch (error) {
       console.error('Failed to load data from localStorage, using sample data.', error);
       setProjectData(SAMPLE_DATA);
+    } finally {
+      setIsInitialized(true);
     }
   }, []);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(projectData));
-    } catch (error) {
-      console.error('Failed to save data to localStorage.', error);
+    if (isInitialized) {
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(projectData));
+      } catch (error) {
+        console.error('Failed to save data to localStorage.', error);
+      }
     }
-  }, [projectData]);
+  }, [projectData, isInitialized]);
   
   const getNewTaskOrder = useCallback((parentId?: string) => {
     const siblings = projectData.tasks.filter(t => t.parentId === parentId);

@@ -215,11 +215,13 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level, isExpanded, onToggleEx
                   </>
                 ) : (
                   <>
-                    <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}><Edit3 size={16} className="mr-1" /> Edit</Button>
+                    <div className="flex items-center gap-1">
+                      <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}><Edit3 size={16} /></Button>
+                      <Button size="sm" variant="destructive" onClick={() => setShowDeleteConfirm(true)}><Trash2 size={16} /></Button>
+                    </div>
                     {task.level < 3 && (
                       <Button size="sm" variant="outline" onClick={handleAddSubTask}><Indent size={16} className="mr-1" /> Add Sub-task</Button>
                     )}
-                    <Button size="sm" variant="destructive" onClick={() => setShowDeleteConfirm(true)}><Trash2 size={16} className="mr-1" /> Delete</Button>
                   </>
                 )}
               </div>

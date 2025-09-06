@@ -15,12 +15,17 @@ const PreviewDialog: React.FC<PreviewDialogProps> = ({ isOpen, onClose, title, c
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] flex flex-col">
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="w-full max-w-2xl max-h-[90vh] flex flex-col relative">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={onClose}
+          className="absolute top-2 right-2 z-10"
+        >
+          <X className="h-5 w-5" />
+        </Button>
+        <CardHeader>
           <CardTitle>{title}</CardTitle>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-5 w-5" />
-          </Button>
         </CardHeader>
         <CardContent className="overflow-auto flex-grow">
           <pre className="bg-gray-100 p-4 rounded-md text-sm whitespace-pre-wrap break-words">

@@ -6,7 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Button } from './components/ui/button';
 import { Download, Upload, AlertTriangle } from 'lucide-react';
 import { exportToJSON, exportToCSV } from './utils/export';
-import ConfirmationDialog from './components/ConfirmationDialog';
+import ImportConfirmationDialog from './components/ImportConfirmationDialog';
+import { LOCAL_STORAGE_KEY } from './constants';
 import type { ProjectData } from './types';
 
 const App: React.FC = () => {
@@ -24,8 +25,7 @@ const App: React.FC = () => {
   } = useProjectData();
 
   const [activeView, setActiveView] = useState<'all' | 'profile'>('all');
-  const [showImportWarning, setShowImportWarning] = useState<boolean>(false);
-  const [pendingImportData, setPendingImportData] = useState<ProjectData | null>(null);
+  const [showImportOptions, setShowImportOptions] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,12 +38,7 @@ const App: React.FC = () => {
           const data = JSON.parse(text);
           // Basic validation
           if (data && Array.isArray(data.tasks)) {
-            if (projectData.tasks.length > 0) {
-              setPendingImportData(data);
-              setShowImportWarning(true);
-            } else {
-              setProjectData(data);
-            }
+            setProjectData(data);
           } else {
             alert('Invalid JSON format.');
           }
@@ -59,20 +54,44 @@ const App: React.FC = () => {
     }
   };
 
-  const confirmImport = () => {
-    if (pendingImportData) {
-      setProjectData(pendingImportData);
-    }
-    setShowImportWarning(false);
-    setPendingImportData(null);
+
+  const handleExportAndImport = () => {
+    // First export current data
+    handleExportJSON();
+    // Then show file picker for import
+    setShowImportOptions(false);
+    setTimeout(() => {
+      fileInputRef.current?.click();
+    }, 100);
+  };
+
+  const handleDirectImport = () => {
+    // Show file picker directly
+    setShowImportOptions(false);
+    setTimeout(() => {
+      fileInputRef.current?.click();
+    }, 100);
   };
 
   const cancelImport = () => {
-    setShowImportWarning(false);
-    setPendingImportData(null);
+    setShowImportOptions(false);
   };
 
   const triggerFileUpload = () => {
+    // Check if there's data in localStorage before showing file picker
+    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (storedData && storedData !== 'null') {
+      try {
+        const parsedStoredData = JSON.parse(storedData);
+        if (parsedStoredData && Array.isArray(parsedStoredData.tasks) && parsedStoredData.tasks.length > 0) {
+          setShowImportOptions(true);
+          return;
+        }
+      } catch {
+        // If localStorage is corrupted, continue with file picker
+      }
+    }
+    // No existing data, show file picker directly
     fileInputRef.current?.click();
   };
 
@@ -138,12 +157,13 @@ const App: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
-      <ConfirmationDialog
-        isOpen={showImportWarning}
-        onConfirm={confirmImport}
+      <ImportConfirmationDialog
+        isOpen={showImportOptions}
+        onExport={handleExportAndImport}
+        onImport={handleDirectImport}
         onCancel={cancelImport}
-        title="Overwrite Existing Data?"
-        message="Importing this file will overwrite all current tasks. This action cannot be undone. Are you sure you want to continue?"
+        title="Import Will Override Current Data"
+        message="If you import it will override any change you have now. Do you want to export the current data?"
         Icon={AlertTriangle}
       />
     </div>
