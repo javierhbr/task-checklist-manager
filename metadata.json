@@ -1,0 +1,5 @@
+{
+  "name": "Hierarchical Task Checklist Manager",
+  "description": "A comprehensive React web application for managing hierarchical task lists with profile-specific timelines, featuring automatic localStorage persistence, multi-format exports, and dynamic checklist generation capabilities.",
+  "requestFramePermissions": []
+}
