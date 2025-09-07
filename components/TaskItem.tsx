@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import type { Task, ProfileAssignment } from '../types';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -9,6 +10,7 @@ import { Select, SelectItem } from './ui/select';
 import { Trash2, Plus, Edit3, Save, X, ChevronRight, ChevronDown, Indent, GripVertical, AlertTriangle } from 'lucide-react';
 import { PROFILE_TYPES, TIMELINE_OPTIONS } from '../constants';
 import ConfirmationDialog from './ConfirmationDialog';
+import MDEditor from '@uiw/react-md-editor';
 
 interface TaskItemProps {
   task: Task;
@@ -33,17 +35,49 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level, isExpanded, onToggleEx
   const [editedDescription, setEditedDescription] = useState(task.description);
   const [dropPosition, setDropPosition] = useState<'top' | 'bottom' | 'inside' | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const itemRef = React.useRef<HTMLDivElement>(null);
+
+  // Reset expansion state when task description changes
+  useEffect(() => {
+    setIsDescriptionExpanded(false);
+  }, [task.description]);
+
+  // Helper function to get truncated description (first 2 lines)
+  const getTruncatedDescription = (description: string) => {
+    const lines = description.split('\n');
+    const truncatedLines = lines.slice(0, 2);
+    return truncatedLines.join('\n');
+  };
+
+  const shouldShowExpandButton = () => {
+    const lines = task.description.split('\n');
+    return lines.length > 2;
+  };
+
+  const getDisplayDescription = () => {
+    if (isDescriptionExpanded || !shouldShowExpandButton()) {
+      return task.description;
+    }
+    return getTruncatedDescription(task.description);
+  };
 
   const handleSave = () => {
     props.updateTask(task.id, { name: editedName, description: editedDescription });
     setIsEditing(false);
+    setIsDescriptionExpanded(false);
   };
 
   const handleCancel = () => {
     setEditedName(task.name);
     setEditedDescription(task.description);
     setIsEditing(false);
+    setIsDescriptionExpanded(false);
+  };
+
+  const handleStartEditing = () => {
+    setIsEditing(true);
+    setIsDescriptionExpanded(false);
   };
 
   const handleAddSubTask = () => {
@@ -154,7 +188,15 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level, isExpanded, onToggleEx
                 {isEditing ? (
                   <div className="space-y-2">
                     <Input value={editedName} onChange={(e) => setEditedName(e.target.value)} />
-                    <Textarea value={editedDescription} onChange={(e) => setEditedDescription(e.target.value)} placeholder="Task description (Markdown supported)" />
+                    <div data-color-mode="light">
+                      <MDEditor
+                        value={editedDescription}
+                        onChange={(value) => setEditedDescription(value || '')}
+                        preview="edit"
+                        hideToolbar={false}
+                        visibleDragbar={false}
+                      />
+                    </div>
                   </div>
                 ) : (
                   <div>
@@ -162,7 +204,21 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level, isExpanded, onToggleEx
                       <h4 className="font-semibold text-lg">{task.name}</h4>
                       <Badge variant="secondary">Level {task.level}</Badge>
                     </div>
-                    <p className="text-gray-600 mt-1">{task.description}</p>
+                    <div className="text-gray-600 mt-1">
+                      <div data-color-mode="light">
+                        <MDEditor.Markdown source={getDisplayDescription()} style={{ whiteSpace: 'pre-wrap' }} />
+                      </div>
+                      {shouldShowExpandButton() && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                          className="mt-1 p-1 h-auto text-xs text-blue-600 hover:text-blue-800"
+                        >
+                          {isDescriptionExpanded ? 'Show less' : 'Show more'}
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -216,7 +272,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, level, isExpanded, onToggleEx
                 ) : (
                   <>
                     <div className="flex items-center gap-1">
-                      <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}><Edit3 size={16} /></Button>
+                      <Button size="sm" variant="outline" onClick={handleStartEditing}><Edit3 size={16} /></Button>
                       <Button size="sm" variant="destructive" onClick={() => setShowDeleteConfirm(true)}><Trash2 size={16} /></Button>
                     </div>
                     {task.level < 3 && (
