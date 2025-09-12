@@ -18,3 +18,16 @@ View your app in AI Studio: https://ai.studio/apps/drive/1Noa9Ha1VNqSGdSU8Y49e3l
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## Deploy to GitHub Pages
+
+To deploy the single-bundle version to GitHub Pages:
+
+1. Make sure your repository is connected to GitHub
+2. Run the deployment command:
+   `npm run deploy:page`
+
+This will:
+- Build the project into a single HTML file with all assets inlined
+- Deploy the `dist` folder to the `gh-pages` branch
+- Make your app available at: https://javierbenavides.github.io/task-checklist-manager

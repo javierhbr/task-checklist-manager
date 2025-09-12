@@ -534,41 +534,40 @@
             exportCsvBtn.disabled = !hasData;
         }
 
+        // Static checklist mapping - just the file paths
+        const checklistMapping = {
+            'General Onboarding': 'jsons/profile-checklist.json',
+            'Contractor Checklist': 'jsons/profile-checklist copy.json',
+            'Manager Training': 'jsons/profile-checklist copy 2.json'
+        };
+
         // File discovery and loading functions
-        async function discoverJsonFiles() {
+        function discoverJsonFiles() {
+            const validFiles = [];
+            
+            // Create entries for each mapped checklist
+            for (const [checklistName, filePath] of Object.entries(checklistMapping)) {
+                validFiles.push({
+                    filename: filePath.split('/').pop(),
+                    displayName: checklistName,
+                    filePath: filePath,
+                    data: null // Will be loaded when selected
+                });
+            }
+            
+            return validFiles;
+        }
+
+        // Load JSON file data
+        async function loadJsonFile(filePath) {
             try {
-                const response = await fetch('/api/list-json-files');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                const response = await fetch(filePath);
+                if (response.ok) {
+                    return await response.json();
                 }
-                
-                const result = await response.json();
-                if (result.error) {
-                    throw new Error(result.error);
-                }
-                
-                // Load the actual data for each file
-                const validFiles = [];
-                for (const fileInfo of result.files) {
-                    try {
-                        const fileResponse = await fetch(fileInfo.path);
-                        if (fileResponse.ok) {
-                            const data = await fileResponse.json();
-                            validFiles.push({
-                                filename: fileInfo.filename,
-                                displayName: fileInfo.displayName,
-                                filePath: fileInfo.path,
-                                data: data
-                            });
-                        }
-                    } catch (error) {
-                        console.log(`Could not load ${fileInfo.filename}:`, error.message);
-                    }
-                }
-                
-                return validFiles;
+                throw new Error(`HTTP error! status: ${response.status}`);
             } catch (error) {
-                console.error('Error discovering JSON files:', error);
+                console.error(`Error loading ${filePath}:`, error);
                 throw error;
             }
         }
@@ -609,8 +608,8 @@
                 li.className = 'flex items-center justify-between p-3 bg-white rounded border hover:bg-gray-50';
                 li.innerHTML = `
                     <div class="flex items-center">
-                        <svg class="w-4 h-4 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        <svg class="w-4 h-4 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                         <div>
                             <div class="font-medium text-gray-900">${checklist.displayName}</div>
@@ -618,8 +617,8 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <div class="text-sm font-medium text-gray-900">${checklist.data.tasks ? checklist.data.tasks.length : 0} tasks</div>
-                        <div class="text-xs text-gray-500">Ready to load</div>
+                        <div class="text-sm font-medium text-gray-900">Click to load</div>
+                        <div class="text-xs text-gray-500">JSON file</div>
                     </div>
                 `;
                 filesList.appendChild(li);
@@ -637,10 +636,34 @@
         }
 
         // Event listeners
-        checklistSelect.addEventListener('change', (e) => {
+        checklistSelect.addEventListener('change', async (e) => {
             selectedChecklist = e.target.value;
             if (selectedChecklist && availableChecklists[selectedChecklist]) {
-                loadChecklistData(availableChecklists[selectedChecklist].data);
+                const checklist = availableChecklists[selectedChecklist];
+                
+                // Show loading state
+                content.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <h3 class="text-lg font-semibold">Loading checklist...</h3>
+                        <p>Loading data from ${checklist.filePath}</p>
+                    </div>
+                `;
+                
+                try {
+                    // Load the JSON data
+                    const data = await loadJsonFile(checklist.filePath);
+                    checklist.data = data; // Cache the data
+                    loadChecklistData(data);
+                } catch (error) {
+                    console.error('Error loading checklist:', error);
+                    content.innerHTML = `
+                        <div class="text-center py-12 text-gray-500">
+                            <h3 class="text-lg font-semibold">Error loading checklist</h3>
+                            <p>Could not load ${checklist.filePath}. Please check that the file exists and is valid JSON.</p>
+                            <p class="text-sm text-gray-400 mt-2">Note: Due to browser security restrictions, you may need to use the "Or Load File" option to load JSON files directly.</p>
+                        </div>
+                    `;
+                }
             } else {
                 tasks = [];
                 profileSelect.disabled = true;
@@ -708,9 +731,9 @@
         });
 
         // Initialize application
-        async function initializeApp() {
+        function initializeApp() {
             try {
-                availableChecklists = await discoverJsonFiles();
+                availableChecklists = discoverJsonFiles();
                 populateChecklistSelect(availableChecklists);
                 populateFilesList(availableChecklists);
                 
@@ -718,13 +741,20 @@
                     content.innerHTML = `
                         <div class="text-center py-12 text-gray-500">
                             <h3 class="text-lg font-semibold">No checklists found</h3>
-                            <p>No valid JSON files found in the 'jsons' directory. Make sure the files exist and are valid JSON.</p>
+                            <p>No checklist mappings found.</p>
+                        </div>
+                    `;
+                } else {
+                    content.innerHTML = `
+                        <div class="text-center py-12 text-gray-500">
+                            <h3 class="text-lg font-semibold">Select a checklist to get started</h3>
+                            <p>Choose a checklist from the dropdown above or use the "Or Load File" option to load a JSON file directly.</p>
                             <div class="mt-4 text-sm text-gray-400">
-                                <p>Expected files in jsons/ directory:</p>
+                                <p>Available checklists:</p>
                                 <ul class="list-disc list-inside mt-2">
-                                    <li>profile-checklist.json</li>
-                                    <li>profile-checklist copy.json</li>
-                                    <li>profile-checklist copy 2.json</li>
+                                    <li>General Onboarding → jsons/profile-checklist.json</li>
+                                    <li>Contractor Checklist → jsons/profile-checklist copy.json</li>
+                                    <li>Manager Training → jsons/profile-checklist copy 2.json</li>
                                 </ul>
                             </div>
                         </div>
@@ -734,16 +764,8 @@
                 console.error('Error initializing app:', error);
                 content.innerHTML = `
                     <div class="text-center py-12 text-gray-500">
-                        <h3 class="text-lg font-semibold">Error loading checklists</h3>
-                        <p>There was an error loading the checklist files. Please check that:</p>
-                        <div class="mt-4 text-sm text-gray-400">
-                            <ul class="list-disc list-inside">
-                                <li>The 'jsons' directory exists</li>
-                                <li>JSON files are valid and accessible</li>
-                                <li>Files are in the correct location</li>
-                                <li>You're running the local server (python server.py)</li>
-                            </ul>
-                        </div>
+                        <h3 class="text-lg font-semibold">Error initializing app</h3>
+                        <p>There was an error setting up the application.</p>
                     </div>
                 `;
             }

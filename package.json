@@ -3,10 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://javierbenavides.github.io/task-checklist-manager",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:page": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
     "@uiw/react-md-editor": "^4.0.8",
@@ -18,7 +20,9 @@
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "gh-pages": "^6.3.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "vite-plugin-singlefile": "^2.3.0"
   }
 }
