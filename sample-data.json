@@ -1,0 +1,119 @@
+{
+  "tasks": [
+    {
+      "id": "task-1",
+      "order": 1,
+      "name": "Onboarding & Setup",
+      "description": "Complete initial setup and get familiar with the tools and processes.",
+      "profiles": [
+        { "profileType": "Associate", "timeline": "Week 1" },
+        { "profileType": "Intern", "timeline": "Week 1" }
+      ],
+      "level": 1
+    },
+    {
+      "id": "task-1-1",
+      "order": 1.1,
+      "name": "Setup Development Environment",
+      "description": "Install all necessary software and configure your IDE for development work.",
+      "profiles": [
+        { "profileType": "Associate", "timeline": "Week 1" },
+        { "profileType": "Intern", "timeline": "Week 1" }
+      ],
+      "parentId": "task-1",
+      "level": 2
+    },
+    {
+      "id": "task-1-1-1",
+      "order": 1.11,
+      "name": "Install Node.js & Git",
+      "description": "Make sure you have the latest LTS version of Node.js and Git installed and configured.",
+      "profiles": [
+        { "profileType": "Associate", "timeline": "Week 1" },
+        { "profileType": "Intern", "timeline": "Week 1" }
+      ],
+      "parentId": "task-1-1",
+      "level": 3
+    },
+    {
+      "id": "task-1-1-2",
+      "order": 1.12,
+      "name": "Configure IDE",
+      "description": "Set up your preferred IDE with necessary extensions and configurations.",
+      "profiles": [
+        { "profileType": "Associate", "timeline": "Week 1" },
+        { "profileType": "Intern", "timeline": "Week 1" }
+      ],
+      "parentId": "task-1-1",
+      "level": 3
+    },
+    {
+      "id": "task-2",
+      "order": 2,
+      "name": "First Project Contribution",
+      "description": "Make your first contribution to a live project and understand the development workflow.",
+      "profiles": [
+        { "profileType": "Associate", "timeline": "Month 1" },
+        { "profileType": "Contractor", "timeline": "Week 2" },
+        { "profileType": "Intern", "timeline": "Week 2" }
+      ],
+      "level": 1
+    },
+    {
+      "id": "task-2-1",
+      "order": 2.1,
+      "name": "Code Review Process",
+      "description": "Learn and participate in the code review process.",
+      "profiles": [
+        { "profileType": "Associate", "timeline": "Month 1" },
+        { "profileType": "Contractor", "timeline": "Week 2" }
+      ],
+      "parentId": "task-2",
+      "level": 2
+    },
+    {
+      "id": "task-3",
+      "order": 3,
+      "name": "Advanced Development Skills",
+      "description": "Develop advanced programming and system design skills.",
+      "profiles": [
+        { "profileType": "CDP", "timeline": "Month 3" },
+        { "profileType": "Manager", "timeline": "Month 6" }
+      ],
+      "level": 1
+    },
+    {
+      "id": "task-3-1",
+      "order": 3.1,
+      "name": "System Architecture",
+      "description": "Learn system design principles and architecture patterns.",
+      "profiles": [
+        { "profileType": "CDP", "timeline": "Month 3" },
+        { "profileType": "Manager", "timeline": "Month 6" }
+      ],
+      "parentId": "task-3",
+      "level": 2
+    },
+    {
+      "id": "task-4",
+      "order": 4,
+      "name": "Leadership & Management",
+      "description": "Develop leadership skills and team management capabilities.",
+      "profiles": [
+        { "profileType": "Manager", "timeline": "Month 12" }
+      ],
+      "level": 1
+    },
+    {
+      "id": "task-4-1",
+      "order": 4.1,
+      "name": "Team Building",
+      "description": "Learn effective team building and collaboration strategies.",
+      "profiles": [
+        { "profileType": "Manager", "timeline": "Month 12" }
+      ],
+      "parentId": "task-4",
+      "level": 2
+    }
+  ]
+}

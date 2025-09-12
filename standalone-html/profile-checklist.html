@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Checklist Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        border: "hsl(214.3 31.8% 91.4%)",
+                        input: "hsl(214.3 31.8% 91.4%)",
+                        ring: "hsl(222.2 84% 4.9%)",
+                        background: "hsl(0 0% 100%)",
+                        foreground: "hsl(222.2 84% 4.9%)",
+                        primary: {
+                            DEFAULT: "hsl(222.2 47.4% 11.2%)",
+                            foreground: "hsl(210 40% 98%)",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(210 40% 96.1%)",
+                            foreground: "hsl(222.2 47.4% 11.2%)",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(0 84.2% 60.2%)",
+                            foreground: "hsl(210 40% 98%)",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(210 40% 96.1%)",
+                            foreground: "hsl(215.4 16.3% 46.9%)",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(210 40% 96.1%)",
+                            foreground: "hsl(222.2 47.4% 11.2%)",
+                        },
+                        popover: {
+                            DEFAULT: "hsl(0 0% 100%)",
+                            foreground: "hsl(222.2 84% 4.9%)",
+                        },
+                        card: {
+                            DEFAULT: "hsl(0 0% 100%)",
+                            foreground: "hsl(222.2 84% 4.9%)",
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .card {
+            background: hsl(0 0% 100%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+        .card-header {
+            padding: 1.5rem 1.5rem 0 1.5rem;
+        }
+        .card-content {
+            padding: 1.5rem;
+        }
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            line-height: 1.75rem;
+            color: hsl(222.2 84% 4.9%);
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid transparent;
+            padding: 0.5rem 1rem;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-outline {
+            background: transparent;
+            border-color: hsl(214.3 31.8% 91.4%);
+            color: hsl(222.2 47.4% 11.2%);
+        }
+        .btn-outline:hover:not(:disabled) {
+            background: hsl(210 40% 96.1%);
+        }
+        .btn-primary {
+            background: hsl(222.2 47.4% 11.2%);
+            color: hsl(210 40% 98%);
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: hsl(222.2 47.4% 8%);
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 9999px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: hsl(210 40% 96.1%);
+            color: hsl(222.2 47.4% 11.2%);
+        }
+        .select {
+            appearance: none;
+            background: white;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 0.375rem;
+            padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            width: 100%;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+        }
+        .select:focus {
+            outline: 2px solid hsl(222.2 84% 4.9%);
+            outline-offset: 2px;
+            border-color: hsl(222.2 84% 4.9%);
+        }
+        .select:hover {
+            border-color: hsl(222.2 47.4% 11.2%);
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+            padding: 1.5rem;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+        .checkbox {
+            accent-color: hsl(222.2 47.4% 11.2%);
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground p-4">
+    <div class="max-w-6xl mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
+                    <div>
+                        <h1 class="card-title mb-2">Profile Checklist Generator</h1>
+                        <p class="text-sm text-gray-600">Generate and export task checklists by profile type</p>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-start sm:items-end gap-4 w-full lg:w-auto">
+                        <div class="flex flex-col min-w-[200px]">
+                            <label for="profileSelect" class="text-sm font-medium text-gray-700 mb-2">Select Profile:</label>
+                            <select id="profileSelect" class="select">
+                                <option value="Contractor">Contractor</option>
+                                <option value="Associate">Associate</option>
+                                <option value="CDP">CDP</option>
+                                <option value="Intern">Intern</option>
+                                <option value="Manager">Manager</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button id="previewBtn" class="btn btn-outline" disabled>
+                                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                Preview
+                            </button>
+                            <button id="exportMarkdownBtn" class="btn btn-outline" disabled>
+                                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Markdown
+                            </button>
+                            <button id="exportCsvBtn" class="btn btn-outline" disabled>
+                                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Export to Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-content">
+                <div id="content">
+                    <div class="text-center py-12 text-gray-500">
+                        <h3 class="text-lg font-semibold">Loading data...</h3>
+                        <p>Initializing checklist data.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="previewTitle" class="modal-title">Markdown Preview</h2>
+                <button id="closePreview" class="modal-close">&times;</button>
+            </div>
+            <div id="previewContent" style="white-space: pre-wrap; font-family: monospace; background: #f5f5f5; padding: 1rem; border-radius: 0.375rem; overflow: auto; max-height: 70vh;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const PROFILE_TYPES = ['Contractor', 'Associate', 'CDP', 'Intern', 'Manager'];
+        const TIMELINE_OPTIONS = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Month 1', 'Month 2', 'Month 3', 'Month 6', 'Month 12'];
+
+        // Global state
+        let tasks = [];
+        let selectedProfile = 'Contractor';
+        let groupedTasks = {};
+
+        // DOM elements
+        const profileSelect = document.getElementById('profileSelect');
+        const previewBtn = document.getElementById('previewBtn');
+        const exportMarkdownBtn = document.getElementById('exportMarkdownBtn');
+        const exportCsvBtn = document.getElementById('exportCsvBtn');
+        const content = document.getElementById('content');
+        const previewModal = document.getElementById('previewModal');
+        const previewTitle = document.getElementById('previewTitle');
+        const previewContent = document.getElementById('previewContent');
+        const closePreview = document.getElementById('closePreview');
+
+        // Utility functions
+        function buildHierarchy(tasks) {
+            const taskMap = new Map();
+            const rootTasks = [];
+
+            // First pass: create a map and initialize children arrays
+            tasks.forEach(task => {
+                taskMap.set(task.id, { ...task, children: [] });
+            });
+
+            // Second pass: build the hierarchy
+            taskMap.forEach(task => {
+                if (task.parentId && taskMap.has(task.parentId)) {
+                    const parent = taskMap.get(task.parentId);
+                    parent.children?.push(task);
+                } else {
+                    rootTasks.push(task);
+                }
+            });
+
+            // Function to recursively sort children
+            const sortChildren = (taskList) => {
+                taskList.sort((a, b) => a.order - b.order);
+                taskList.forEach(task => {
+                    if (task.children && task.children.length > 0) {
+                        sortChildren(task.children);
+                    }
+                });
+            };
+
+            sortChildren(rootTasks);
+            return rootTasks;
+        }
+
+        function getTasksForProfile(tasks, profileType) {
+            // Filter tasks that have the specified profile assignment
+            const filteredTasks = tasks
+                .filter(task => task.profiles.some(p => p.profileType === profileType))
+                .map(task => {
+                    // Find the specific timeline for the selected profile
+                    const relevantProfile = task.profiles.find(p => p.profileType === profileType);
+                    return { ...task, timeline: relevantProfile?.timeline || 'Unassigned' };
+                });
+            
+            // Build hierarchy for the filtered tasks
+            const hierarchicalTasks = buildHierarchy(filteredTasks);
+
+            // Group by timeline while maintaining hierarchy
+            const groupedByTimeline = {};
+
+            const flattenAndGroup = (task, timeline) => {
+                if (!groupedByTimeline[timeline]) {
+                    groupedByTimeline[timeline] = [];
+                }
+                const { children, ...taskWithoutChildren } = task;
+                groupedByTimeline[timeline].push(taskWithoutChildren);
+
+                if (task.children) {
+                    task.children.forEach(child => flattenAndGroup(child, child.timeline));
+                }
+            }
+
+            hierarchicalTasks.forEach(task => flattenAndGroup(task, task.timeline));
+            return groupedByTimeline;
+        }
+
+        function generateProfileChecklistMarkdown(groupedTasks, profileType) {
+            let markdown = `# Checklist for ${profileType}\n\n`;
+            
+            const sortedTimelines = Object.keys(groupedTasks).sort((a, b) => {
+                const aIndex = TIMELINE_OPTIONS.indexOf(a);
+                const bIndex = TIMELINE_OPTIONS.indexOf(b);
+                return aIndex - bIndex;
+            });
+
+            const taskToMarkdown = (task, indentLevel) => {
+                const indent = '  '.repeat(indentLevel);
+                let taskMd = `${indent}- [ ] **${task.name}**\n`;
+                if (task.description) {
+                    taskMd += `${indent}  > ${task.description.replace(/\n/g, `\n${indent}  > `)}\n`;
+                }
+                if (task.children && task.children.length > 0) {
+                    task.children.forEach(child => {
+                        taskMd += taskToMarkdown(child, indentLevel + 1);
+                    });
+                }
+                return taskMd;
+            };
+
+            sortedTimelines.forEach(timeline => {
+                const hierarchicalTasks = buildHierarchy(groupedTasks[timeline]);
+                markdown += `## ${timeline}\n\n`;
+                hierarchicalTasks.forEach(task => {
+                    markdown += taskToMarkdown(task, 0);
+                });
+                markdown += '\n';
+            });
+
+            return markdown;
+        }
+
+        function downloadFile(content, mimeType, filename) {
+            const blob = new Blob([content], { type: mimeType });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportProfileChecklistToMarkdown(groupedTasks, profileType, filename) {
+            const markdownContent = generateProfileChecklistMarkdown(groupedTasks, profileType);
+            downloadFile(markdownContent, 'text/markdown;charset=utf-8;', filename);
+        }
+
+        function exportProfileChecklistToCSV(groupedTasks, filename) {
+            const flatTasksForCsv = [];
+            
+            const sortedTimelines = Object.keys(groupedTasks).sort((a, b) => {
+                const aIndex = TIMELINE_OPTIONS.indexOf(a);
+                const bIndex = TIMELINE_OPTIONS.indexOf(b);
+                return aIndex - bIndex;
+            });
+
+            sortedTimelines.forEach(timeline => {
+                const hierarchicalTasks = buildHierarchy(groupedTasks[timeline]);
+
+                const processTasks = (tasks) => {
+                    tasks.forEach(task => {
+                        flatTasksForCsv.push({
+                            timeline: timeline,
+                            level: task.level,
+                            name: task.name,
+                            description: task.description || ''
+                        });
+                        if (task.children && task.children.length > 0) {
+                            processTasks(task.children);
+                        }
+                    });
+                };
+
+                processTasks(hierarchicalTasks);
+            });
+
+            const csvContent = convertToCSV(flatTasksForCsv);
+            downloadFile(csvContent, 'text/csv;charset=utf-8;', filename);
+        }
+
+        function convertToCSV(data) {
+            if (data.length === 0) return '';
+            const headers = Object.keys(data[0]);
+            const csvRows = [
+                headers.join(','),
+                ...data.map(row => headers.map(fieldName => escapeCsvField(row[fieldName])).join(','))
+            ];
+            return csvRows.join('\r\n');
+        }
+
+        function escapeCsvField(field) {
+            if (field === null || field === undefined) {
+                return '';
+            }
+            const str = String(field);
+            if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                return `"${str.replace(/"/g, '""')}"`;
+            }
+            return str;
+        }
+
+        function renderChecklist(tasks) {
+            return tasks.map(task => {
+                const taskHtml = `
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" class="checkbox mt-1.5 h-4 w-4" />
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium">${task.name}</span>
+                                <span class="badge">Level ${task.level}</span>
+                            </div>
+                            ${task.description ? `<p class="text-sm text-gray-600 mt-1">${task.description}</p>` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                let childrenHtml = '';
+                if (task.children && task.children.length > 0) {
+                    childrenHtml = `
+                        <div class="mt-2 space-y-2 pl-6 border-l-2 ml-2 border-gray-200">
+                            ${renderChecklist(task.children)}
+                        </div>
+                    `;
+                }
+                
+                return `<div>${taskHtml}${childrenHtml}</div>`;
+            }).join('');
+        }
+
+        function updateContent() {
+            if (tasks.length === 0) {
+                content.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <h3 class="text-lg font-semibold">No data available</h3>
+                        <p>No task data found in the embedded dataset.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            groupedTasks = getTasksForProfile(tasks, selectedProfile);
+            const sortedTimelines = Object.keys(groupedTasks).sort((a, b) => {
+                const aIndex = TIMELINE_OPTIONS.indexOf(a);
+                const bIndex = TIMELINE_OPTIONS.indexOf(b);
+                return aIndex - bIndex;
+            });
+
+            if (sortedTimelines.length === 0) {
+                content.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <h3 class="text-lg font-semibold">No tasks for this profile.</h3>
+                        <p>Select a different profile or check your JSON data.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="space-y-8">';
+            sortedTimelines.forEach(timeline => {
+                const timelineTasks = buildHierarchy(groupedTasks[timeline]);
+                html += `
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4 pb-2 border-b">${timeline}</h3>
+                        <div class="space-y-4">
+                            ${renderChecklist(timelineTasks)}
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            content.innerHTML = html;
+        }
+
+        function updateButtons() {
+            const hasData = tasks.length > 0 && Object.keys(groupedTasks).length > 0;
+            previewBtn.disabled = !hasData;
+            exportMarkdownBtn.disabled = !hasData;
+            exportCsvBtn.disabled = !hasData;
+        }
+
+        // Event listeners
+        profileSelect.addEventListener('change', (e) => {
+            selectedProfile = e.target.value;
+            updateContent();
+            updateButtons();
+        });
+
+        previewBtn.addEventListener('click', () => {
+            if (Object.keys(groupedTasks).length === 0) return;
+            const markdownContent = generateProfileChecklistMarkdown(groupedTasks, selectedProfile);
+            previewTitle.textContent = `Markdown Preview: ${selectedProfile} Checklist`;
+            previewContent.textContent = markdownContent;
+            previewModal.style.display = 'flex';
+        });
+
+        exportMarkdownBtn.addEventListener('click', () => {
+            if (Object.keys(groupedTasks).length === 0) return;
+            exportProfileChecklistToMarkdown(groupedTasks, selectedProfile, `${selectedProfile}-checklist.md`);
+        });
+
+        exportCsvBtn.addEventListener('click', () => {
+            if (Object.keys(groupedTasks).length === 0) return;
+            exportProfileChecklistToCSV(groupedTasks, `${selectedProfile}-checklist.csv`);
+        });
+
+        closePreview.addEventListener('click', () => {
+            previewModal.style.display = 'none';
+        });
+
+        previewModal.addEventListener('click', (e) => {
+            if (e.target === previewModal) {
+                previewModal.style.display = 'none';
+            }
+        });
+
+        // Embedded JSON data
+        const embeddedData = {
+            "tasks": [
+                {
+                    "id": "task-1",
+                    "order": 1,
+                    "name": "Onboarding & Setup",
+                    "description": "**Complete** initial setup and get familiar with the tools.\n\n- adasdad\n- asdasdasd\n- asdasd\n",
+                    "profiles": [
+                        {
+                            "profileType": "Associate",
+                            "timeline": "Week 1"
+                        }
+                    ],
+                    "level": 1
+                },
+                {
+                    "id": "task-1-1",
+                    "order": 1.1,
+                    "name": "Setup Development Environment",
+                    "description": "Install all necessary software and configure your IDE.",
+                    "profiles": [
+                        {
+                            "profileType": "Associate",
+                            "timeline": "Week 1"
+                        }
+                    ],
+                    "parentId": "task-1",
+                    "level": 2
+                },
+                {
+                    "id": "task-1-1-1",
+                    "order": 1.11,
+                    "name": "Install Node.js & Git",
+                    "description": "Make sure you have the latest LTS version of Node.js and Git installed.",
+                    "profiles": [
+                        {
+                            "profileType": "Associate",
+                            "timeline": "Week 1"
+                        }
+                    ],
+                    "parentId": "task-1-1",
+                    "level": 3
+                },
+                {
+                    "id": "task-2",
+                    "order": 2,
+                    "name": "First Project Contribution",
+                    "description": "Make your first contribution to a live project.",
+                    "profiles": [
+                        {
+                            "profileType": "Associate",
+                            "timeline": "Month 1"
+                        },
+                        {
+                            "profileType": "Contractor",
+                            "timeline": "Week 2"
+                        }
+                    ],
+                    "level": 1
+                }
+            ]
+        };
+
+        // Load embedded data
+        function loadDefaultData() {
+            tasks = embeddedData.tasks || [];
+            updateContent();
+            updateButtons();
+        }
+
+        // Initialize
+        loadDefaultData();
+    </script>
+</body>
+</html>

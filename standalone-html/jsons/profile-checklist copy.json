@@ -1,0 +1,62 @@
+{
+  "tasks": [
+    {
+      "id": "task-1",
+      "order": 1,
+      "name": "Onboarding & Setup",
+      "description": "**Complete** initial setup and get familiar with the tools.\n\n- adasdad\n- asdasdasd\n- asdasd\n",
+      "profiles": [
+        {
+          "profileType": "Associate",
+          "timeline": "Week 1"
+        }
+      ],
+      "level": 1
+    },
+    {
+      "id": "task-1-1",
+      "order": 1.1,
+      "name": "Setup Development Environment",
+      "description": "Install all necessary software and configure your IDE.",
+      "profiles": [
+        {
+          "profileType": "Associate",
+          "timeline": "Week 1"
+        }
+      ],
+      "parentId": "task-1",
+      "level": 2
+    },
+    {
+      "id": "task-1-1-1",
+      "order": 1.11,
+      "name": "Install Node.js & Git",
+      "description": "Make sure you have the latest LTS version of Node.js and Git installed.",
+      "profiles": [
+        {
+          "profileType": "Associate",
+          "timeline": "Week 1"
+        }
+      ],
+      "parentId": "task-1-1",
+      "level": 3
+    },
+    {
+      "id": "task-2",
+      "order": 2,
+      "name": "First Project Contribution",
+      "description": "Make your first contribution to a live project.",
+      "profiles": [
+        {
+          "profileType": "Associate",
+          "timeline": "Month 1"
+        },
+        {
+          "profileType": "Contractor",
+          "timeline": "Week 2"
+        }
+      ],
+      "level": 1
+    }
+  ]
+}
