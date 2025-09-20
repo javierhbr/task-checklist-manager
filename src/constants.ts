@@ -19,7 +19,32 @@ export const TIMELINE_OPTIONS = [
   'Month 12',
 ];
 
+import { newHireOnboardingData } from './data/new-hire-onboarding';
+import { newProjectSetupData } from './data/new-project-setup';
+import { advancedProjectData } from './data/advanced-project';
+import type { ProjectData } from './types';
+
 export const LOCAL_STORAGE_KEY = 'task-checklist-data';
+
+export const BUILTIN_CHECKLISTS = [
+  {
+    key: "newHire",
+    label: "New Hire Onboarding",
+    data: newHireOnboardingData
+  },
+  {
+    key: "newProject", 
+    label: "New Project Setup",
+    data: newProjectSetupData
+  },
+  {
+    key: "advancedProject",
+    label: "Advanced Project",
+    data: advancedProjectData
+  }
+] as const;
+
+export type BuiltinChecklistKey = typeof BUILTIN_CHECKLISTS[number]['key'];
 
 export const SAMPLE_DATA = {
   tasks: [

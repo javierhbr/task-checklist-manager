@@ -4,10 +4,11 @@ import AllTasksView from './components/AllTasksView';
 import ByProfileView from './components/ByProfileView';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
 import { Button } from './components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 import { Download, Upload, AlertTriangle } from 'lucide-react';
 import { exportToJSON, exportToCSV } from './utils/export';
 import ImportConfirmationDialog from './components/ImportConfirmationDialog';
-import { LOCAL_STORAGE_KEY } from './constants';
+import { LOCAL_STORAGE_KEY, BUILTIN_CHECKLISTS } from './constants';
 import type { ProjectData } from './types';
 
 const App: React.FC = () => {
@@ -26,6 +27,7 @@ const App: React.FC = () => {
 
   const [activeView, setActiveView] = useState<'all' | 'profile'>('all');
   const [showImportOptions, setShowImportOptions] = useState<boolean>(false);
+  const [selectedChecklist, setSelectedChecklist] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,6 +105,16 @@ const App: React.FC = () => {
     exportToCSV(projectData.tasks, 'project-data.csv');
   }, [projectData.tasks]);
 
+  const handleBuiltinChecklistLoad = (checklistKey: string) => {
+    if (!checklistKey) return;
+    
+    const checklist = BUILTIN_CHECKLISTS.find(c => c.key === checklistKey);
+    if (!checklist) return;
+
+    setProjectData(checklist.data);
+    setSelectedChecklist(checklistKey);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
@@ -120,6 +132,18 @@ const App: React.FC = () => {
                 accept=".json"
                 onChange={handleFileImport}
               />
+              <Select 
+                value={selectedChecklist} 
+                onChange={(e) => handleBuiltinChecklistLoad(e.target.value)}
+                className="w-[200px]"
+              >
+                <SelectItem value="">Load Built-in Checklist</SelectItem>
+                {BUILTIN_CHECKLISTS.map((checklist) => (
+                  <SelectItem key={checklist.key} value={checklist.key}>
+                    {checklist.label}
+                  </SelectItem>
+                ))}
+              </Select>
               <Button variant="outline" onClick={triggerFileUpload}>
                 <Upload className="mr-2 h-4 w-4" /> Import JSON
               </Button>
